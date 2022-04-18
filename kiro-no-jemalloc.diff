@@ -1,0 +1,26 @@
+diff --git a/Cargo.toml b/Cargo.toml
+index 599c792..af98017 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -35,7 +35,6 @@ unicode-width = "0.1"
+ term = "0.7"
+ getopts = "0.2"
+ signal-hook = "0.3"
+-jemallocator = "0.3"
+ 
+ [badges]
+ maintenance = { status = "actively-developed" }
+diff --git a/src/main.rs b/src/main.rs
+index 31f11f8..8a6743d 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -7,9 +7,6 @@ use std::env;
+ use std::io;
+ use std::process::exit;
+ 
+-#[global_allocator]
+-static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
+-
+ fn print_help(program: &str, opts: Options) {
+     let description = format!(
+         "{prog}: A tiny UTF-8 terminal text editor
