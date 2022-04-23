@@ -26,7 +26,7 @@ docker run --rm -it rust-userland
 
 ## TODO
 
-- Add more common tools, specially those that are not in coreutils but are expected to usually exist, e.g., `ps`, `sed`, `gzip`, `diff`, `less`, `find`, `ip`, `curl`, `wget`, … (maybe wrappers around `procs`/`sd`/`fd` could help)
+- Add more common tools, specially those that are not in coreutils but are expected to usually exist, e.g., `ps`, `sed`, `gzip`, `diff`, `less`, `find`, `ip` (and others from iproute2), `mount` (and others from util-linux), `curl`, `wget`, … (maybe wrappers around `procs`/`sd`/`fd` could help)
 - Add more new tools written in Rust that provide similar/valuable functionality but aren't a drop-in (some already included)
 - Build for arm64 (currently the Dockerfile has the x86 target hardcoded)
 - Try compilation with [relibc](https://gitlab.redox-os.org/redox-os/relibc) or [mustang](https://github.com/sunfishcode/mustang) instead of musl
