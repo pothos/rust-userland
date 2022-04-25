@@ -1,22 +1,22 @@
-FROM docker.io/library/debian:11 AS builder
+FROM docker.io/library/debian:sid AS builder
 RUN ln -fs /bin/bash /bin/sh
 WORKDIR "/"
-RUN apt-get update && apt-get -y install curl git gcc g++ musl musl-dev musl-tools
+RUN apt-get update && apt-get -y install curl git gcc g++ musl musl-dev musl-tools mold
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > ri.sh && chmod +x ri.sh && ./ri.sh -y
 RUN source "$HOME/.cargo/env" && rustup target add x86_64-unknown-linux-musl
-RUN git clone https://github.com/nuta/nsh && cd nsh && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" cargo build --target x86_64-unknown-linux-musl --release
+RUN git clone https://github.com/nuta/nsh && cd nsh && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" mold -run cargo build --target x86_64-unknown-linux-musl --release
 COPY ripgrep-no-jemalloc.diff /ripgrep-no-jemalloc.diff
-RUN git clone https://github.com/BurntSushi/ripgrep rg && cd rg && git apply /ripgrep-no-jemalloc.diff && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" cargo build --target x86_64-unknown-linux-musl --release
-RUN git clone https://github.com/uutils/coreutils && cd coreutils && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" cargo build --target x86_64-unknown-linux-musl --release --features feat_os_unix_musl
+RUN git clone https://github.com/BurntSushi/ripgrep rg && cd rg && git apply /ripgrep-no-jemalloc.diff && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" mold -run cargo build --target x86_64-unknown-linux-musl --release
+RUN git clone https://github.com/uutils/coreutils && cd coreutils && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" mold -run cargo build --target x86_64-unknown-linux-musl --release --features feat_os_unix_musl
 COPY kiro-no-jemalloc.diff /kiro-no-jemalloc.diff
-RUN git clone https://github.com/rhysd/kiro-editor kiro && cd kiro && git apply /kiro-no-jemalloc.diff && source "$HOME/.cargo/env" && cd /kiro && RUSTFLAGS="-C target-feature=+crt-static" cargo build --target x86_64-unknown-linux-musl --release
-RUN git clone https://github.com/sharkdp/bat && cd bat && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" cargo build --target x86_64-unknown-linux-musl --release
-RUN git clone https://github.com/dalance/procs && cd procs && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" cargo build --target x86_64-unknown-linux-musl --release
-RUN git clone https://github.com/ClementTsang/bottom btm && cd btm && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" cargo build --target x86_64-unknown-linux-musl --release
-RUN git clone https://github.com/ezrosent/frawk && cd frawk && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" cargo build --target x86_64-unknown-linux-musl --release --no-default-features
-RUN git clone https://github.com/chmln/sd && cd sd && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" cargo build --target x86_64-unknown-linux-musl --release
-RUN git clone https://github.com/sharkdp/fd && cd fd && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" cargo build --target x86_64-unknown-linux-musl --release
-RUN git clone https://github.com/theryangeary/choose && cd choose && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" cargo build --target x86_64-unknown-linux-musl --release
+RUN git clone https://github.com/rhysd/kiro-editor kiro && cd kiro && git apply /kiro-no-jemalloc.diff && source "$HOME/.cargo/env" && cd /kiro && RUSTFLAGS="-C target-feature=+crt-static" mold -run cargo build --target x86_64-unknown-linux-musl --release
+RUN git clone https://github.com/sharkdp/bat && cd bat && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" mold -run cargo build --target x86_64-unknown-linux-musl --release
+RUN git clone https://github.com/dalance/procs && cd procs && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" mold -run cargo build --target x86_64-unknown-linux-musl --release
+RUN git clone https://github.com/ClementTsang/bottom btm && cd btm && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" mold -run cargo build --target x86_64-unknown-linux-musl --release
+RUN git clone https://github.com/ezrosent/frawk && cd frawk && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" mold -run cargo build --target x86_64-unknown-linux-musl --release --no-default-features
+RUN git clone https://github.com/chmln/sd && cd sd && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" mold -run cargo build --target x86_64-unknown-linux-musl --release
+RUN git clone https://github.com/sharkdp/fd && cd fd && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" mold -run cargo build --target x86_64-unknown-linux-musl --release
+RUN git clone https://github.com/theryangeary/choose && cd choose && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" mold -run cargo build --target x86_64-unknown-linux-musl --release
 RUN for x in $(ls -d /*/target/x86_64-unknown-linux-musl/release); do y=$(echo "$x" | cut -d / -f 2); strip "$x"/"$y" ; done
 
 FROM scratch
