@@ -16,7 +16,8 @@ if [ "$PATCH" != "" ]; then
   git apply "$PATCH"
 fi
 source "$HOME/.cargo/env"
-RUSTFLAGS="-C target-feature=+crt-static" mold -run cargo build --target x86_64-unknown-linux-musl --release "$@"
+# aarch64-unknown-linux-musl or x86_64-unknown-linux-musl
+RUSTFLAGS="-C target-feature=+crt-static" mold -run cargo build --target $(uname -m)-unknown-linux-musl --release "$@"
 mkdir -p /rust-bin
-strip target/x86_64-unknown-linux-musl/release/"$BIN"
-mv target/x86_64-unknown-linux-musl/release/"$BIN" /rust-bin/
+strip target/$(uname -m)-unknown-linux-musl/release/"$BIN"
+mv target/$(uname -m)-unknown-linux-musl/release/"$BIN" /rust-bin/
