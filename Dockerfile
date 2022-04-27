@@ -4,33 +4,23 @@ WORKDIR "/"
 RUN apt-get update && apt-get -y install curl git gcc g++ musl musl-dev musl-tools mold
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > ri.sh && chmod +x ri.sh && ./ri.sh -y
 RUN source "$HOME/.cargo/env" && rustup target add x86_64-unknown-linux-musl
-RUN git clone https://github.com/nuta/nsh && cd nsh && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" mold -run cargo build --target x86_64-unknown-linux-musl --release
+COPY build.sh /build.sh
+RUN /build.sh https://github.com/nuta/nsh
 COPY ripgrep-no-jemalloc.diff /ripgrep-no-jemalloc.diff
-RUN git clone https://github.com/BurntSushi/ripgrep rg && cd rg && git apply /ripgrep-no-jemalloc.diff && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" mold -run cargo build --target x86_64-unknown-linux-musl --release
-RUN git clone https://github.com/uutils/coreutils && cd coreutils && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" mold -run cargo build --target x86_64-unknown-linux-musl --release --features feat_os_unix_musl
+RUN BIN=rg PATCH=/ripgrep-no-jemalloc.diff /build.sh https://github.com/BurntSushi/ripgrep
+RUN /build.sh https://github.com/uutils/coreutils --features feat_os_unix_musl
 COPY kiro-no-jemalloc.diff /kiro-no-jemalloc.diff
-RUN git clone https://github.com/rhysd/kiro-editor kiro && cd kiro && git apply /kiro-no-jemalloc.diff && source "$HOME/.cargo/env" && cd /kiro && RUSTFLAGS="-C target-feature=+crt-static" mold -run cargo build --target x86_64-unknown-linux-musl --release
-RUN git clone https://github.com/sharkdp/bat && cd bat && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" mold -run cargo build --target x86_64-unknown-linux-musl --release
-RUN git clone https://github.com/dalance/procs && cd procs && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" mold -run cargo build --target x86_64-unknown-linux-musl --release
-RUN git clone https://github.com/ClementTsang/bottom btm && cd btm && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" mold -run cargo build --target x86_64-unknown-linux-musl --release
-RUN git clone https://github.com/ezrosent/frawk && cd frawk && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" mold -run cargo build --target x86_64-unknown-linux-musl --release --no-default-features
-RUN git clone https://github.com/chmln/sd && cd sd && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" mold -run cargo build --target x86_64-unknown-linux-musl --release
-RUN git clone https://github.com/sharkdp/fd && cd fd && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" mold -run cargo build --target x86_64-unknown-linux-musl --release
-RUN git clone https://github.com/theryangeary/choose && cd choose && source "$HOME/.cargo/env" && RUSTFLAGS="-C target-feature=+crt-static" mold -run cargo build --target x86_64-unknown-linux-musl --release
-RUN for x in $(ls -d /*/target/x86_64-unknown-linux-musl/release); do y=$(echo "$x" | cut -d / -f 2); strip "$x"/"$y" ; done
+RUN BIN=kiro PATCH=/kiro-no-jemalloc.diff /build.sh https://github.com/rhysd/kiro-editor
+RUN /build.sh https://github.com/sharkdp/bat
+RUN /build.sh https://github.com/dalance/procs
+RUN BIN=btm /build.sh https://github.com/ClementTsang/bottom
+RUN /build.sh https://github.com/ezrosent/frawk --no-default-features
+RUN /build.sh https://github.com/chmln/sd
+RUN /build.sh https://github.com/sharkdp/fd
+RUN /build.sh https://github.com/theryangeary/choose
 
 FROM scratch
-COPY --from=builder /nsh/target/x86_64-unknown-linux-musl/release/nsh /bin/nsh
-COPY --from=builder /coreutils/target/x86_64-unknown-linux-musl/release/coreutils /bin/coreutils
-COPY --from=builder /rg/target/x86_64-unknown-linux-musl/release/rg /bin/rg
-COPY --from=builder /kiro/target/x86_64-unknown-linux-musl/release/kiro /bin/kiro
-COPY --from=builder /bat/target/x86_64-unknown-linux-musl/release/bat /bin/bat
-COPY --from=builder /procs/target/x86_64-unknown-linux-musl/release/procs /bin/procs
-COPY --from=builder /btm/target/x86_64-unknown-linux-musl/release/btm /bin/btm
-COPY --from=builder /frawk/target/x86_64-unknown-linux-musl/release/frawk /bin/frawk
-COPY --from=builder /sd/target/x86_64-unknown-linux-musl/release/sd /bin/sd
-COPY --from=builder /fd/target/x86_64-unknown-linux-musl/release/fd /bin/fd
-COPY --from=builder /choose/target/x86_64-unknown-linux-musl/release/choose /bin/choose
+COPY --from=builder /rust-bin /bin
 COPY passwd /etc/passwd
 COPY shadow /etc/shadow
 COPY group /etc/group
