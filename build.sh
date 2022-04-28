@@ -17,7 +17,6 @@ if [ "$PATCH" != "" ]; then
 fi
 source "$HOME/.cargo/env"
 # aarch64-unknown-linux-musl or x86_64-unknown-linux-musl
-RUSTFLAGS="-C target-feature=+crt-static" mold -run cargo build --target $(uname -m)-unknown-linux-musl --release "$@"
+RUSTFLAGS="-C target-feature=+crt-static -C strip=symbols" mold -run cargo build --target $(uname -m)-unknown-linux-musl --release "$@"
 mkdir -p /rust-bin
-strip target/$(uname -m)-unknown-linux-musl/release/"$BIN"
 mv target/$(uname -m)-unknown-linux-musl/release/"$BIN" /rust-bin/
