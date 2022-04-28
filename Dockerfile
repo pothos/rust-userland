@@ -1,10 +1,14 @@
-FROM docker.io/library/debian:sid AS builder
+FROM docker.io/library/alpine as discoverer
+RUN uname -m > /uname-m
+# Explicitly using an amd64 image to avoid binary translation (assuming the build host is amd64)
+FROM docker.io/amd64/debian:sid AS builder
 RUN ln -fs /bin/bash /bin/sh
 WORKDIR "/"
+COPY --from=discoverer /uname-m /uname-m
 RUN apt-get update && apt-get -y install curl git gcc g++ musl musl-dev musl-tools mold
-RUN ln -s /usr/bin/$(uname -m)-linux-gnu-ar /bin/$(uname -m)-linux-musl-ar
+RUN ln -s /usr/bin/$(cat /uname-m)-linux-gnu-ar /bin/$(cat /uname-m)-linux-musl-ar
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > ri.sh && chmod +x ri.sh && ./ri.sh -y
-RUN source "$HOME/.cargo/env" && rustup target add $(uname -m)-unknown-linux-musl
+RUN source "$HOME/.cargo/env" && rustup target add $(cat /uname-m)-unknown-linux-musl
 COPY build.sh /build.sh
 RUN /build.sh https://github.com/nuta/nsh
 COPY ripgrep-no-jemalloc.diff /ripgrep-no-jemalloc.diff
