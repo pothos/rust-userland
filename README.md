@@ -28,7 +28,7 @@ docker run --rm -it rust-userland
 
 - Add more common tools, specially those that are not in coreutils but are expected to usually exist, e.g., `ps`, `sed`, `gzip`, `diff`, `less`, `find`, `ip` (and others from iproute2), `mount` (and others from util-linux), `curl`, `wget`, … (maybe wrappers around `procs`/`sd`/`fd` could help)
 - Add more new tools written in Rust that provide similar/valuable functionality but aren't a drop-in (some already included)
-- Try compilation with [relibc](https://gitlab.redox-os.org/redox-os/relibc) or [mustang](https://github.com/sunfishcode/mustang) instead of musl
+- Try compilation with [eyra](https://github.com/sunfishcode/eyra/), [relibc](https://gitlab.redox-os.org/redox-os/relibc) or [mustang](https://github.com/sunfishcode/mustang) instead of musl
 - Check if the extracted userland also works with [Kerla](https://github.com/nuta/kerla) instead of Linux
 
 PRs welcome ;)
